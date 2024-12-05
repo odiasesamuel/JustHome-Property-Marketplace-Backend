@@ -10,21 +10,21 @@ logs/
 *.log.*
 
 # TypeScript
-dist/                  # Compiled output
-build/                 # Alternate compiled output folder
-*.tsbuildinfo          # TS incremental build info
+dist/
+build/
+*.tsbuildinfo
 
 # Environment
-.env                   # Environment variables file
-.env.*                 # Additional env files
+.env
+.env.*
 
 # Editor and OS
-.idea/                 # IDE configuration (e.g., WebStorm, IntelliJ)
-.vscode/               # VSCode settings
-*.swp                  # Swap files
-.DS_Store              # macOS
-Thumbs.db              # Windows
-*.bak                  # Backup files
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*.bak
 
 # Coverage reports
 coverage/
@@ -35,11 +35,11 @@ jest-test-results.json
 results.xml
 
 # Optional Dependency Managers
-package-lock.json      # Optional for Yarn projects
-yarn.lock              # Optional for npm projects
-.pnpm-debug.log        # pnpm logs
+package-lock.json
+yarn.lock
+.pnpm-debug.log
 
 # Miscellaneous
-*.pid                  # PID files
-*.seed                 # Random seed files
-*.log.*.gz             # Rotated logs
+*.pid
+*.seed
+*.log.*.gz
