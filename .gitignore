@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# TypeScript
+dist/                  # Compiled output
+build/                 # Alternate compiled output folder
+*.tsbuildinfo          # TS incremental build info
+
+# Environment
+.env                   # Environment variables file
+.env.*                 # Additional env files
+
+# Editor and OS
+.idea/                 # IDE configuration (e.g., WebStorm, IntelliJ)
+.vscode/               # VSCode settings
+*.swp                  # Swap files
+.DS_Store              # macOS
+Thumbs.db              # Windows
+*.bak                  # Backup files
+
+# Coverage reports
+coverage/
+
+# Test Output
+*.test-results
+jest-test-results.json
+results.xml
+
+# Optional Dependency Managers
+package-lock.json      # Optional for Yarn projects
+yarn.lock              # Optional for npm projects
+.pnpm-debug.log        # pnpm logs
+
+# Miscellaneous
+*.pid                  # PID files
+*.seed                 # Random seed files
+*.log.*.gz             # Rotated logs
