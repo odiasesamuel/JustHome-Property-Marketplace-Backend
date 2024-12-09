@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
+import propertyRoutes from "./routes/propertyRoutes";
 import { globalErrorHandler, Error404Handler } from "./controllers/errorController";
 
 const app = express();
@@ -9,9 +10,9 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use("/auth", authRoutes);
+app.use("/property", propertyRoutes);
 
 app.use(globalErrorHandler);
-
 app.use(Error404Handler);
 
 // app.get("/", (req: Request, res: Response) => {

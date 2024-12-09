@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import Landlord from "../models/landlordModel";
-import { GlobalErrorHandlerType } from "./errorController";
 
 export const signup = (req: Request, res: Response, next: NextFunction) => {
   try {

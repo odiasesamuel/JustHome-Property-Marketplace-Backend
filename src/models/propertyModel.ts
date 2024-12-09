@@ -16,6 +16,11 @@ const propertySchema = new Schema({
     required: true,
   },
 
+  description: {
+    type: String,
+    required: true,
+  },
+
   propertyDetails: {
     type: {
       city: String,
