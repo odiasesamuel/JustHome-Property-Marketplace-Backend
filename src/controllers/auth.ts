@@ -1,18 +1,24 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import Landlord from "../models/landlordDetails";
+import { GlobalErrorHandlerType } from "./error";
 
-export const signup = (req: Request, res: Response) => {
+export const signup = (req: Request, res: Response, next: NextFunction) => {
   try {
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     const email = req.body.email;
     const password = req.body.password;
 
+    // const error: GlobalErrorHandlerType = new Error("Signup failed");
+    // error.statusCode = 422;
+    // error.data = "User ABC already available";
+    // throw error;
+
     const landlord = new Landlord({ firstName, lastName, email, password });
     landlord.save();
 
     res.status(201).json({ message: "Landlord account has been created" });
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
