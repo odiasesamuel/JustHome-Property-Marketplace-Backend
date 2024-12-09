@@ -22,4 +22,4 @@ const landlordSchema = new Schema({
   },
 });
 
-export default mongoose.model("landlord_detail", landlordSchema);
+export default mongoose.model("Landlord_detail", landlordSchema);

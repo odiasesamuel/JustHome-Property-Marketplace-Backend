@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import authRoutes from "./routes/auth";
-import { globalErrorHandler, Error404Handler } from "./controllers/error";
+import authRoutes from "./routes/authRoutes";
+import { globalErrorHandler, Error404Handler } from "./controllers/errorController";
 
 const app = express();
 
