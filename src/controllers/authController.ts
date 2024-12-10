@@ -16,9 +16,10 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const landlord = new Landlord(validatedData.data);
-    await landlord.save();
+    const savedLandlord = await landlord.save();
+    const { firstName, lastName, email } = savedLandlord;
 
-    res.status(201).json({ message: "Landlord account has been created", data: validatedData.data });
+    res.status(201).json({ message: "Landlord account has been created", data: { firstName, lastName, email } });
   } catch (error) {
     next(error);
   }
