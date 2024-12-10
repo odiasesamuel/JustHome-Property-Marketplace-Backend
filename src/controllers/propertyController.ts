@@ -4,6 +4,33 @@ import { GlobalErrorHandlerType } from "./errorController";
 import { addPropertySchema } from "../schemas/landlordSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 
+export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const properties = await Property.find();
+
+    res.status(200).json({ message: "Fetched properties successfully", properties });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProperty = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const params = req.params.propertyId;
+    const property = await Property.findById(params);
+
+    if (!property) {
+      const error: GlobalErrorHandlerType = new Error("Could not find property");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json({ message: "Fetched property successfully", property });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const addProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedData = addPropertySchema.safeParse(req.body);
