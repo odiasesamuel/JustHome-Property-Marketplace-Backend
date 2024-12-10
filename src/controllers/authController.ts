@@ -1,22 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import Landlord from "../models/landlordModel";
+import { GlobalErrorHandlerType } from "./errorController";
+import { createLandlordSchema } from "../schemas/landlordSchema";
 
 export const signup = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const email = req.body.email;
-    const password = req.body.password;
+    const validatedData = createLandlordSchema.safeParse(req.body);
 
-    // const error: GlobalErrorHandlerType = new Error("Signup failed");
-    // error.statusCode = 422;
-    // error.data = "User ABC already available";
-    // throw error;
+    if (!validatedData.success) {
+      const errorMessages = validatedData.error.issues.map((err) => err.message).join(", ");
+      const error: GlobalErrorHandlerType = new Error(errorMessages);
+      error.statusCode = 422;
+      error.data = req.body;
+      throw error;
+    }
 
-    const landlord = new Landlord({ firstName, lastName, email, password });
+    const landlord = new Landlord(validatedData.data);
     landlord.save();
 
-    res.status(201).json({ message: "Landlord account has been created" });
+    res.status(201).json({ message: "Landlord account has been created", data: validatedData.data });
   } catch (error) {
     next(error);
   }
