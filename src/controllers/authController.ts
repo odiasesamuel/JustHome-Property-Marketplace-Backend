@@ -3,7 +3,7 @@ import Landlord from "../models/landlordModel";
 import { GlobalErrorHandlerType } from "./errorController";
 import { createLandlordSchema } from "../schemas/landlordSchema";
 
-export const signup = (req: Request, res: Response, next: NextFunction) => {
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedData = createLandlordSchema.safeParse(req.body);
 
@@ -16,7 +16,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
     }
 
     const landlord = new Landlord(validatedData.data);
-    landlord.save();
+    await landlord.save();
 
     res.status(201).json({ message: "Landlord account has been created", data: validatedData.data });
   } catch (error) {
