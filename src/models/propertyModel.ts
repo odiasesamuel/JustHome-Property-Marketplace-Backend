@@ -23,6 +23,13 @@ const propertySchema = new Schema({
 
   propertyDetails: {
     type: {
+      propertyOwnerId: {
+        type: Schema.Types.ObjectId,
+        ref: "Users",
+        required: true,
+      },
+      state: String,
+      LGA: String,
       city: String,
       area: String,
       numberOfRooms: Number,

@@ -20,7 +20,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const registeredUser = await user.save();
     const { firstName, lastName, email, accountType } = registeredUser;
 
-    res.status(201).json({ message: "Landlord account has been created", data: { firstName, lastName, email, accountType } });
+    res.status(201).json({ message: `${accountType} account has been created`, data: { firstName, lastName, email, accountType } });
   } catch (error) {
     next(error);
   }
