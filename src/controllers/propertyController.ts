@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Property from "../models/propertyModel";
 import { GlobalErrorHandlerType } from "./errorController";
-import { addPropertySchema } from "../schemas/landlordSchema";
+import { addPropertySchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {

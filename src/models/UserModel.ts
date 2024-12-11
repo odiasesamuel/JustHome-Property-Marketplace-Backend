@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const landlordSchema = new Schema({
+const userSchema = new Schema({
   firstName: {
     type: String,
     required: true,
@@ -16,10 +16,16 @@ const landlordSchema = new Schema({
     required: true,
   },
 
+  accountType: {
+    type: String,
+    enum: ["Individual", "Property owner", "Property agent"],
+    required: true,
+  },
+
   password: {
     type: String,
     required: true,
   },
 });
 
-export default mongoose.model("Landlord_detail", landlordSchema);
+export default mongoose.model("Users", userSchema);

@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import Landlord from "../models/landlordModel";
+import User from "../models/UserModel";
 import { GlobalErrorHandlerType } from "./errorController";
-import { createLandlordSchema } from "../schemas/landlordSchema";
+import { createUserSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const validatedData = createLandlordSchema.safeParse(req.body);
+    const validatedData = createUserSchema.safeParse(req.body);
 
     if (!validatedData.success) {
       const errorMessages = formatValidationError(validatedData.error.issues);
@@ -16,11 +16,11 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       throw error;
     }
 
-    const landlord = new Landlord(validatedData.data);
-    const savedLandlord = await landlord.save();
-    const { firstName, lastName, email } = savedLandlord;
+    const user = new User(validatedData.data);
+    const registeredUser = await user.save();
+    const { firstName, lastName, email, accountType } = registeredUser;
 
-    res.status(201).json({ message: "Landlord account has been created", data: { firstName, lastName, email } });
+    res.status(201).json({ message: "Landlord account has been created", data: { firstName, lastName, email, accountType } });
   } catch (error) {
     next(error);
   }
