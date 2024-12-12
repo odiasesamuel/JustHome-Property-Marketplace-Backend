@@ -17,7 +17,15 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 export const getProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const propertyId = req.params.propertyId;
-    const property = await Property.findById(propertyId).populate("propertyDetails.propertyOwnerId");
+    const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
+    if (!validatedPropertyId.success) {
+      const errorMessages = formatValidationError(validatedPropertyId.error.issues);
+      const error: GlobalErrorHandlerType = new Error(errorMessages);
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const property = await Property.findById(validatedPropertyId.data).populate("propertyDetails.propertyOwnerId");
 
     if (!property) {
       const error: GlobalErrorHandlerType = new Error("Could not find property");
@@ -47,6 +55,14 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
     const savedProperty = await property.save();
 
     res.status(201).json({ message: "The Property has been uploaded", propertyData: savedProperty });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editProperty = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const propertyId = req.params.propertyId;
   } catch (error) {
     next(error);
   }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addProperty, getProperties, getProperty, deleteProperty } from "../controllers/propertyController";
+import { addProperty, getProperties, getProperty, deleteProperty, editProperty } from "../controllers/propertyController";
 
 const router = Router();
 
@@ -8,6 +8,8 @@ router.get("/", getProperties);
 router.get("/:propertyId", getProperty);
 
 router.post("/", addProperty);
+
+router.put("/:propertyId", editProperty);
 
 router.delete("/:propertyId", deleteProperty);
 
