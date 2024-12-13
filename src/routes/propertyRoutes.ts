@@ -9,7 +9,7 @@ router.get("/:propertyId", getProperty);
 
 router.post("/", addProperty);
 
-router.put("/:propertyId", editProperty);
+router.patch("/:propertyId", editProperty);
 
 router.delete("/:propertyId", deleteProperty);
 

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Property from "../models/propertyModel";
 import { GlobalErrorHandlerType } from "./errorController";
-import { addPropertySchema, propertyIdSchema } from "../schemas/propertySchema";
+import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../schemas/propertySchema";
 import { formatValidationError } from "../utils/formatValidationError";
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
@@ -63,6 +63,25 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
 export const editProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const propertyId = req.params.propertyId;
+    const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
+    if (!validatedPropertyId.success) {
+      const errorMessages = formatValidationError(validatedPropertyId.error.issues);
+      const error: GlobalErrorHandlerType = new Error(errorMessages);
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const validatedUpdatedData = editPropertySchema.safeParse(req.body);
+    if (!validatedUpdatedData.success) {
+      const errorMessages = formatValidationError(validatedUpdatedData.error.issues);
+      const error: GlobalErrorHandlerType = new Error(errorMessages);
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const editedData = await Property.findByIdAndUpdate(validatedPropertyId.data, validatedUpdatedData.data, { new: true });
+
+    res.status(200).json({ message: "The Property data has been successfully updated", propertyData: editedData });
   } catch (error) {
     next(error);
   }
