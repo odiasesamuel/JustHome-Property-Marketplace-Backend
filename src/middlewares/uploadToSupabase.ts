@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import multer, { FileFilterCallback } from "multer";
 import { supabase } from "../config/supabaseClient.config";
+import { GlobalErrorHandlerType } from "../controllers/errorController";
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
   if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
@@ -19,13 +20,16 @@ const upload = multer({
 export const uploadFilesToSupabase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   upload(req, res, async (err: any) => {
     if (err) {
-      console.error("Multer Error:", err.message);
-      return res.status(400).json({ error: err.message });
+      const error: GlobalErrorHandlerType = new Error(err.message);
+      error.statusCode = 400;
+      throw error;
     }
 
     try {
-      if (!req.files || !Array.isArray(req.files)) {
-        return res.status(400).json({ error: "No files uploaded" });
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        const error: GlobalErrorHandlerType = new Error("No files uploaded");
+        error.statusCode = 400;
+        throw error;
       }
 
       const uploadedFiles: string[] = [];
@@ -41,8 +45,9 @@ export const uploadFilesToSupabase = async (req: Request, res: Response, next: N
         });
 
         if (uploadError) {
-          console.error("Supabase Upload Error:", uploadError.message);
-          return res.status(500).json({ message: "Failed to upload file to Supabase" });
+          const error: GlobalErrorHandlerType = new Error("Failed to upload file to Supabase");
+          error.statusCode = 500;
+          throw error;
         }
 
         // Generate a public URL
@@ -54,8 +59,7 @@ export const uploadFilesToSupabase = async (req: Request, res: Response, next: N
       req.body.imageUrls = uploadedFiles;
       next();
     } catch (error) {
-      console.error("File Upload Error:", error);
-      res.status(500).json({ error: "An error occurred during file upload" });
+      next(error);
     }
   });
 };
