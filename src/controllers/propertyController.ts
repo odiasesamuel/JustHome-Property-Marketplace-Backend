@@ -25,7 +25,7 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
       throw error;
     }
 
-    const property = await Property.findById(validatedPropertyId.data).populate("propertyDetails.propertyOwnerId");
+    const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId");
 
     if (!property) {
       const error: GlobalErrorHandlerType = new Error("Could not find property");
@@ -41,6 +41,8 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
 
 export const addProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    req.body.price = +req.body.price;
+    req.body.numberOfRooms = +req.body.numberOfRooms;
     const validatedData = addPropertySchema.safeParse(req.body);
 
     if (!validatedData.success) {
@@ -56,6 +58,7 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
 
     res.status(201).json({ message: "The Property has been uploaded", propertyData: savedProperty });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -106,7 +109,7 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
       throw error;
     }
 
-    res.status(200).json({ message: "Post have been successfully deleted", propertyData: deletedData });
+    res.status(200).json({ message: "Property have been successfully deleted", propertyData: deletedData });
   } catch (error) {
     next(error);
   }

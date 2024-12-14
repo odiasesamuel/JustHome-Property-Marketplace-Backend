@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { addProperty, getProperties, getProperty, deleteProperty, editProperty } from "../controllers/propertyController";
+import { getProperties, getProperty, deleteProperty, editProperty, addProperty } from "../controllers/propertyController";
+import { uploadFilesToSupabase } from "../middlewares/uploadToSupabase";
 
 const router = Router();
 
@@ -7,7 +8,7 @@ router.get("/", getProperties);
 
 router.get("/:propertyId", getProperty);
 
-router.post("/", addProperty);
+router.post("/", uploadFilesToSupabase, addProperty);
 
 router.patch("/:propertyId", editProperty);
 

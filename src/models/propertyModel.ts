@@ -16,24 +16,61 @@ const propertySchema = new Schema({
     required: true,
   },
 
+  state: {
+    type: String,
+    required: true,
+  },
+
+  LGA: {
+    type: String,
+    required: true,
+  },
+
+  city: {
+    type: String,
+    required: true,
+  },
+
+  area: {
+    type: String,
+    required: true,
+  },
+
   description: {
     type: String,
     required: true,
   },
 
-  propertyDetails: {
-    type: {
-      propertyOwnerId: {
-        type: Schema.Types.ObjectId,
-        ref: "Users",
-        required: true,
-      },
-      state: String,
-      LGA: String,
-      city: String,
-      area: String,
-      numberOfRooms: Number,
-    },
+  numberOfRooms: {
+    type: Number,
+    required: true,
+  },
+
+  propertyType: {
+    type: String,
+    enum: ["Duplex", "Flat"],
+    required: true,
+  },
+
+  forSaleOrRent: {
+    type: String,
+    enum: ["Rent", "Sale"],
+    required: true,
+  },
+
+  price: {
+    type: Number,
+    required: true,
+  },
+
+  propertyOwnerId: {
+    type: Schema.Types.ObjectId,
+    ref: "Users",
+    required: true,
+  },
+
+  imageUrls: {
+    type: [String],
     required: true,
   },
 });
