@@ -16,7 +16,7 @@ export const deleteFilesFromSupabase = async (req: Request, res: Response, next:
       throw error;
     }
 
-    const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId");
+    const property = await Property.findById(validatedPropertyId.data);
 
     if (!property) {
       const error: GlobalErrorHandlerType = new Error("Could not find property");
@@ -31,19 +31,21 @@ export const deleteFilesFromSupabase = async (req: Request, res: Response, next:
       })
       .filter((filename): filename is string => !!filename);
 
-    const { data, error } = await supabase.storage.from("rental-marketplace-images").remove(filenames);
+    const { data: existingFiles, error: listError } = await supabase.storage.from("rental-marketplace-images").list();
+  
+    const filesToDelete = filenames.filter((filename) => existingFiles?.some((file) => file.name === filename));
 
-    if (error) {
-      const error: GlobalErrorHandlerType = new Error("Failed to delete file from Supabase");
-      error.statusCode = 500;
-      throw error;
+    if (filesToDelete.length > 0) {
+      const { data, error } = await supabase.storage.from("rental-marketplace-images").remove(filenames);
+
+      if (error) {
+        const error: GlobalErrorHandlerType = new Error("Failed to delete file from Supabase");
+        error.statusCode = 500;
+        throw error;
+      }
     }
 
-    if (req.body.callNext) {
-      return next();
-    }
-
-    res.status(200).json({ message: "Files deleted successfully" });
+    next();
   } catch (error) {
     next(error);
   }

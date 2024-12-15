@@ -114,3 +114,24 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 };
+
+export const removeImageUrl = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const propertyId = req.params.propertyId;
+
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      const error: GlobalErrorHandlerType = new Error("Could not find property");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    property.imageUrls = [];
+    await property.save();
+
+    res.status(200).json({ message: "Property Images has been deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
