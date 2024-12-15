@@ -31,18 +31,12 @@ export const deleteFilesFromSupabase = async (req: Request, res: Response, next:
       })
       .filter((filename): filename is string => !!filename);
 
-    const { data: existingFiles, error: listError } = await supabase.storage.from("rental-marketplace-images").list();
-  
-    const filesToDelete = filenames.filter((filename) => existingFiles?.some((file) => file.name === filename));
+    const { data, error } = await supabase.storage.from("rental-marketplace-images").remove(filenames);
 
-    if (filesToDelete.length > 0) {
-      const { data, error } = await supabase.storage.from("rental-marketplace-images").remove(filenames);
-
-      if (error) {
-        const error: GlobalErrorHandlerType = new Error("Failed to delete file from Supabase");
-        error.statusCode = 500;
-        throw error;
-      }
+    if (error) {
+      const error: GlobalErrorHandlerType = new Error("Failed to delete file from Supabase");
+      error.statusCode = 500;
+      throw error;
     }
 
     next();

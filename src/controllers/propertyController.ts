@@ -115,7 +115,7 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const removeImageUrl = async (req: Request, res: Response, next: NextFunction) => {
+export const editPropertyImageUrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const propertyId = req.params.propertyId;
 
@@ -127,10 +127,12 @@ export const removeImageUrl = async (req: Request, res: Response, next: NextFunc
       throw error;
     }
 
-    property.imageUrls = [];
+    const imageUrls = req.body.imageUrls;
+
+    property.imageUrls = imageUrls;
     await property.save();
 
-    res.status(200).json({ message: "Property Images has been deleted" });
+    res.status(200).json({ message: "Property Image has been successfully updated", updatedProperty: property });
   } catch (error) {
     next(error);
   }

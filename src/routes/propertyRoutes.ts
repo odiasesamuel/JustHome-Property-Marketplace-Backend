@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProperties, getProperty, deleteProperty, editProperty, addProperty, removeImageUrl } from "../controllers/propertyController";
+import { getProperties, getProperty, deleteProperty, editProperty, addProperty, editPropertyImageUrl } from "../controllers/propertyController";
 import { uploadFilesToSupabase } from "../middlewares/uploadToSupabase";
 import { deleteFilesFromSupabase } from "../middlewares/deleteFromSupabase";
 
@@ -15,6 +15,6 @@ router.patch("/:propertyId", editProperty);
 
 router.delete("/:propertyId", deleteFilesFromSupabase, deleteProperty);
 
-router.delete("/image/:propertyId", deleteFilesFromSupabase, removeImageUrl);
+router.patch("/image/:propertyId", deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl);
 
 export default router;
