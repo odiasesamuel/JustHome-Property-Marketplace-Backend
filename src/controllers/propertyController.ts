@@ -6,9 +6,17 @@ import { formatValidationError } from "../utils/formatValidationError";
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const properties = await Property.find();
+    const currentPage = Math.max(1, +(req.query.page as string));
+    let perPage = +(req.query.perPage as string) || 10;
+    const totalProperties = await Property.find().countDocuments();
 
-    res.status(200).json({ message: "Fetched properties successfully", properties });
+    if (!req.query.page && !req.query.perPage) perPage = totalProperties;
+
+    const properties = await Property.find()
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+
+    res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
   } catch (error) {
     next(error);
   }
