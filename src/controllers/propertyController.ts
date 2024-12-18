@@ -23,7 +23,8 @@ export const getPropertiesWithSearchTerm = async (req: Request, res: Response, n
 
     const properties = await Property.find(filter)
       .skip((currentPage - 1) * perPage)
-      .limit(perPage);
+      .limit(perPage)
+      .lean();
 
     res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
   } catch (error) {
@@ -58,7 +59,8 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 
     const properties = await Property.find(filter)
       .skip((currentPage - 1) * perPage)
-      .limit(perPage);
+      .limit(perPage)
+      .lean();
 
     res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
   } catch (error) {
@@ -77,7 +79,7 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
       throw error;
     }
 
-    const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId");
+    const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId").lean();
 
     if (!property) {
       const error: GlobalErrorHandlerType = new Error("Could not find property");
