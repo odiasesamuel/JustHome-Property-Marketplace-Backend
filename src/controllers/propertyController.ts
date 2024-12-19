@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import Property from "../models/propertyModel";
-import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../schemas/propertySchema";
 import { formatValidationError } from "../utils/formatValidationError";
+import { errorHandler } from "../utils/errorUtils";
 
 export const getPropertiesWithSearchTerm = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -73,18 +73,15 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
     const propertyId = req.params.propertyId;
     const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
     if (!validatedPropertyId.success) {
-      const errorMessages = formatValidationError(validatedPropertyId.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      throw error;
+      const errorMessage = formatValidationError(validatedPropertyId.error.issues);
+      throw errorHandler(errorMessage, 422);
     }
 
     const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId").lean();
 
     if (!property) {
-      const error: GlobalErrorHandlerType = new Error("Could not find property");
-      error.statusCode = 404;
-      throw error;
+      const errorMessage = "Could not find property";
+      throw errorHandler(errorMessage, 404);
     }
 
     res.status(200).json({ message: "Fetched property successfully", property });
@@ -100,11 +97,8 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
     const validatedData = addPropertySchema.safeParse(req.body);
 
     if (!validatedData.success) {
-      const errorMessages = formatValidationError(validatedData.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      error.data = req.body;
-      throw error;
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
     }
 
     const property = new Property(validatedData.data);
@@ -121,19 +115,14 @@ export const editProperty = async (req: Request, res: Response, next: NextFuncti
     const propertyId = req.params.propertyId;
     const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
     if (!validatedPropertyId.success) {
-      const errorMessages = formatValidationError(validatedPropertyId.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      throw error;
+      const errorMessage = formatValidationError(validatedPropertyId.error.issues);
+      throw errorHandler(errorMessage, 422);
     }
 
     const validatedUpdatedData = editPropertySchema.safeParse(req.body);
     if (!validatedUpdatedData.success) {
-      const errorMessages = formatValidationError(validatedUpdatedData.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      error.data = req.body;
-      throw error;
+      const errorMessage = formatValidationError(validatedUpdatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
     }
 
     const editedData = await Property.findByIdAndUpdate(validatedPropertyId.data, validatedUpdatedData.data, { new: true });
@@ -149,18 +138,15 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     const propertyId = req.params.propertyId;
     const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
     if (!validatedPropertyId.success) {
-      const errorMessages = formatValidationError(validatedPropertyId.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      throw error;
+      const errorMessage = formatValidationError(validatedPropertyId.error.issues);
+      throw errorHandler(errorMessage, 422);
     }
 
     const deletedData = await Property.findByIdAndDelete(validatedPropertyId.data);
 
     if (!deletedData) {
-      const error: GlobalErrorHandlerType = new Error("Could not find property");
-      error.statusCode = 404;
-      throw error;
+      const errorMessage = "Could not find property";
+      throw errorHandler(errorMessage, 404);
     }
 
     res.status(200).json({ message: "Property have been successfully deleted", propertyData: deletedData });
@@ -176,9 +162,8 @@ export const editPropertyImageUrl = async (req: Request, res: Response, next: Ne
     const property = await Property.findById(propertyId);
 
     if (!property) {
-      const error: GlobalErrorHandlerType = new Error("Could not find property");
-      error.statusCode = 404;
-      throw error;
+      const errorMessage = "Could not find property";
+      throw errorHandler(errorMessage, 404);
     }
 
     const imageUrls = req.body.imageUrls;

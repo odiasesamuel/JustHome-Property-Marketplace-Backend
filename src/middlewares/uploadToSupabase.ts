@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import multer, { FileFilterCallback } from "multer";
 import { supabase } from "../config/supabaseClient.config";
-import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
+import { errorHandler } from "../utils/errorUtils";
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
   if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
@@ -19,17 +19,12 @@ const upload = multer({
 
 export const uploadFilesToSupabase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   upload(req, res, async (err: any) => {
-    if (err) {
-      const error: GlobalErrorHandlerType = new Error(err.message);
-      error.statusCode = 400;
-      throw error;
-    }
+    if (err) throw errorHandler(err.message, 400);
 
     try {
       if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-        const error: GlobalErrorHandlerType = new Error("No files uploaded");
-        error.statusCode = 400;
-        throw error;
+        const errorMessage = "No files uploaded";
+        throw errorHandler(errorMessage, 400);
       }
 
       const uploadedFiles: string[] = [];
@@ -45,9 +40,8 @@ export const uploadFilesToSupabase = async (req: Request, res: Response, next: N
         });
 
         if (uploadError) {
-          const error: GlobalErrorHandlerType = new Error("Failed to upload file to Supabase");
-          error.statusCode = 500;
-          throw error;
+          const errorMessage = "Failed to upload file to Supabase";
+          throw errorHandler("Failed to upload file to Supabase", 500);
         }
 
         // Generate a public URL

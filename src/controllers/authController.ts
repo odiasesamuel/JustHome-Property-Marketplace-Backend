@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/UserModel";
-import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 import { createUserSchema, loginSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
+import { errorHandler } from "../utils/errorUtils";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -14,11 +14,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const validatedData = createUserSchema.safeParse(req.body);
 
     if (!validatedData.success) {
-      const errorMessages = formatValidationError(validatedData.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      error.data = req.body;
-      throw error;
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
     }
 
     const password = validatedData.data.password;
@@ -38,27 +35,20 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const validatedData = loginSchema.safeParse(req.body);
     if (!validatedData.success) {
-      const errorMessages = formatValidationError(validatedData.error.issues);
-      const error: GlobalErrorHandlerType = new Error(errorMessages);
-      error.statusCode = 422;
-      error.data = req.body;
-      throw error;
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
     }
 
     const user = await User.findOne({ email: validatedData.data.email });
     if (!user) {
-      const error: GlobalErrorHandlerType = new Error("A user with this email could not be found");
-      error.statusCode = 401;
-      error.data = validatedData.data;
-      throw error;
+      const errorMessage = "A user with this email could not be found";
+      throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
     const isEqual = await bcrypt.compare(validatedData.data.password, user.password);
     if (!isEqual) {
-      const error: GlobalErrorHandlerType = new Error("Password is incorrect");
-      error.statusCode = 401;
-      error.data = validatedData.data;
-      throw error;
+      const errorMessage = "Password is incorrect";
+      throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
     const tokenValue = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
