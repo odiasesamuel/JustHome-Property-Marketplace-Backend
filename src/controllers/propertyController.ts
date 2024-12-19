@@ -112,7 +112,6 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
 
     res.status(201).json({ message: "The Property has been uploaded", propertyData: savedProperty });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
@@ -133,6 +132,7 @@ export const editProperty = async (req: Request, res: Response, next: NextFuncti
       const errorMessages = formatValidationError(validatedUpdatedData.error.issues);
       const error: GlobalErrorHandlerType = new Error(errorMessages);
       error.statusCode = 422;
+      error.data = req.body;
       throw error;
     }
 

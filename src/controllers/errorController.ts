@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 
 export type GlobalErrorHandlerType = Error & {
   statusCode?: number;
-  data?: String;
+  data?: any;
 };
 
 export const globalErrorHandler = (error: GlobalErrorHandlerType, req: Request, res: Response, next: NextFunction) => {
