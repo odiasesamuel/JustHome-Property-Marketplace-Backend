@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Property from "../models/propertyModel";
-import { GlobalErrorHandlerType } from "./errorController";
+import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../schemas/propertySchema";
 import { formatValidationError } from "../utils/formatValidationError";
 

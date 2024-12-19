@@ -3,7 +3,7 @@ import { supabase } from "../config/supabaseClient.config";
 import Property from "../models/propertyModel";
 import { propertyIdSchema } from "../schemas/propertySchema";
 import { formatValidationError } from "../utils/formatValidationError";
-import { GlobalErrorHandlerType } from "../controllers/errorController";
+import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 
 export const deleteFilesFromSupabase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

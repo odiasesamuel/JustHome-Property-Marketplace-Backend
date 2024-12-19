@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
-import { globalErrorHandler, Error404Handler } from "./controllers/errorController";
+import { globalErrorHandler, Error404Handler } from "./middlewares/errorHandler";
 
 const app = express();
 

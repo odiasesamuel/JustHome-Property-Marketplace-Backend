@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/UserModel";
-import { GlobalErrorHandlerType } from "./errorController";
+import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 import { createUserSchema, loginSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 import bcrypt from "bcryptjs";

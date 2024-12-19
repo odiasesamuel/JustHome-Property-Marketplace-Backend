@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import multer, { FileFilterCallback } from "multer";
 import { supabase } from "../config/supabaseClient.config";
-import { GlobalErrorHandlerType } from "../controllers/errorController";
+import { GlobalErrorHandlerType } from "../middlewares/errorHandler";
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
   if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
