@@ -3,11 +3,14 @@ import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
 import { globalErrorHandler, Error404Handler } from "./middlewares/errorHandler";
+import { corsMiddleware } from "./middlewares/corsMiddleware";
 
 const app = express();
 
 // app.use(express.json());
 app.use(bodyParser.json());
+
+app.use(corsMiddleware);
 
 app.use("/auth", authRoutes);
 app.use("/property", propertyRoutes);
