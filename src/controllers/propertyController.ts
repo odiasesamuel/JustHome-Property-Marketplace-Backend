@@ -94,6 +94,7 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
   try {
     req.body.price = +req.body.price;
     req.body.numberOfRooms = +req.body.numberOfRooms;
+    req.body.propertyOwnerId = req.userId;
     const validatedData = addPropertySchema.safeParse(req.body);
 
     if (!validatedData.success) {
@@ -125,6 +126,17 @@ export const editProperty = async (req: Request, res: Response, next: NextFuncti
       throw errorHandler(errorMessage, 422, req.body);
     }
 
+    const propertyData = await Property.findById(validatedPropertyId.data);
+    if (!propertyData) {
+      const errorMessage = "Could not find property";
+      throw errorHandler(errorMessage, 404);
+    }
+
+    if (propertyData?.propertyOwnerId.toString() !== req.userId) {
+      const errorMessage = "Not authorized to edit this property";
+      throw errorHandler(errorMessage, 401);
+    }
+
     const editedData = await Property.findByIdAndUpdate(validatedPropertyId.data, validatedUpdatedData.data, { new: true });
 
     res.status(200).json({ message: "The Property data has been successfully updated", propertyData: editedData });
@@ -140,6 +152,12 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     if (!validatedPropertyId.success) {
       const errorMessage = formatValidationError(validatedPropertyId.error.issues);
       throw errorHandler(errorMessage, 422);
+    }
+
+    const propertyData = await Property.findById(validatedPropertyId.data);
+    if (propertyData?.propertyOwnerId.toString() !== req.userId) {
+      const errorMessage = "Not authorized to edit this property";
+      throw errorHandler(errorMessage, 401);
     }
 
     const deletedData = await Property.findByIdAndDelete(validatedPropertyId.data);
