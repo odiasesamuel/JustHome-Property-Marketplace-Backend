@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
+    "sc": "ts-node src/services/scrapy.ts",
     "build": "tsc"
   },
   "author": "odiase samuel",
@@ -22,6 +23,8 @@
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.3",
     "multer": "^1.4.5-lts.1",
+    "puppeteer": "^23.11.1",
+    "puppeteer-cluster": "^0.24.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
