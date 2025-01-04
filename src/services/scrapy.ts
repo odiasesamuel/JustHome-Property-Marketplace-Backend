@@ -1,5 +1,18 @@
 import puppeteer from "puppeteer";
 import { Cluster } from "puppeteer-cluster";
+import Property from "../models/propertyModel";
+import express from "express";
+import { connectToDatabase } from "../config/db.config";
+
+const app = express();
+
+const PORT = 3001;
+
+connectToDatabase(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+});
 
 const sleep = (waitTimeInMs: number) => new Promise((resolve) => setTimeout(resolve, waitTimeInMs));
 
@@ -56,10 +69,29 @@ const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-
         const phoneNumber = await page.$eval(`[data-type="phoneNumber"] a`, (el) => el.textContent?.trim());
         const description = await page.$eval(`p[itemprop="description"]`, (el) => el.textContent?.trim());
         const numberOfRooms = await page.$eval(".fal.fa-bed + span", (el) => el.textContent?.trim());
-        const price = await page.$eval(`span[itemprop="price"]`, (el) => el.textContent?.trim());
+        const priceRaw = await page.$eval(`span[itemprop="price"]`, (el) => el.textContent?.trim());
         const imageUrls = await page.$$eval(`img[itemprop="image"]`, (imgs) => imgs.map((img) => img.src));
 
-        properties.push({ name, phoneNumber, description, numberOfRooms, price, imageUrls });
+        const parts: string[] = url.split("/houses/")[1].split("/");
+        const state: string = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+        const area: string = parts[1]
+          .split("?")[0]
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        const forSaleOrRent = url.includes("for-sale") ? "Sale" : url.includes("for-rent") ? "Rent" : "Rent";
+        const isDuplex = /duplex/i.test(url);
+        const isFlat = /flat|apartment/i.test(url);
+
+        const propertyType = isDuplex ? "Duplex" : isFlat ? "Flat" : "Flat";
+        const price = priceRaw ? parseInt(priceRaw.replace(/,/g, ""), 10) : 0;
+
+        const propertyData = { name, email: "xxxxxx@gmail.com", phoneNumber, state, LGA: area, city: area, area, description, numberOfRooms: numberOfRooms ? +numberOfRooms : 0, propertyType, forSaleOrRent, price, propertyOwnerId: "676aff2b2f08e4ed24164195", imageUrls };
+
+        properties.push(propertyData);
+
+        const property = new Property(propertyData);
+        const savedProperty = await property.save();
       } catch (error) {
         console.log("Error processing property:", error);
       }
