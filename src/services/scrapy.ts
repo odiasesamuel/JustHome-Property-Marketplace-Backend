@@ -58,7 +58,13 @@ export const scrapeProperties = async (urls: string[]) => {
         const priceRaw = await page.$eval(`span[itemprop="price"]`, (el) => el.textContent?.trim());
         const imageUrls = await page.$$eval(`img[itemprop="image"]`, (imgs) => imgs.map((img) => img.src));
 
-        const parts: string[] = url.split("/houses/")[1].split("/");
+        let parts: string[] = [];
+        if (url.includes("/houses/")) {
+          parts = url.split("/houses/")[1].split("/");
+        } else if (url.includes("/flats-apartments/")) {
+          parts = url.split("/flats-apartments/")[1].split("/");
+        }
+
         const state: string = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
         const area: string = parts[1]
           .split("?")[0]
@@ -82,7 +88,6 @@ export const scrapeProperties = async (urls: string[]) => {
         console.log("Error processing property:", error);
       }
     }
-
   });
 
   // Queue URLs for scraping
