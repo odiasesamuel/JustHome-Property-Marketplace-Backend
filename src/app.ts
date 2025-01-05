@@ -5,6 +5,7 @@ import propertyRoutes from "./routes/propertyRoutes";
 import { globalErrorHandler, Error404Handler } from "./middlewares/errorHandler";
 import { corsMiddleware } from "./middlewares/corsMiddleware";
 import { isAuth } from "./middlewares/isAuth";
+import scraperRoutes from "./routes/scraperRoutes";
 
 const app = express();
 
@@ -14,7 +15,8 @@ app.use(bodyParser.json());
 app.use(corsMiddleware);
 
 app.use("/auth", authRoutes);
-app.use("/property", propertyRoutes);
+app.use("/property", isAuth, propertyRoutes);
+app.use("/scrape", scraperRoutes);
 
 app.use(globalErrorHandler);
 app.use(Error404Handler);

@@ -1,24 +1,10 @@
 import puppeteer from "puppeteer";
 import { Cluster } from "puppeteer-cluster";
 import Property from "../models/propertyModel";
-import express from "express";
-import { connectToDatabase } from "../config/db.config";
-
-const app = express();
-
-const PORT = 3001;
-
-connectToDatabase(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-});
 
 const sleep = (waitTimeInMs: number) => new Promise((resolve) => setTimeout(resolve, waitTimeInMs));
 
-const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-island?selectedLoc=1&q=for-sale+houses+lagos+victoria-island", "https://nigeriapropertycentre.com/for-sale/houses/lagos/lekki?selectedLoc=1&q=for-sale+houses+lagos+lekki"];
-
-export const scrapeProperties = async () => {
+export const scrapeProperties = async (urls: string[]) => {
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_PAGE,
     maxConcurrency: 30,
@@ -29,7 +15,7 @@ export const scrapeProperties = async () => {
     },
   });
 
-  const properties = [];
+  const properties: any = [];
 
   cluster.on("taskerror", (err, data) => {
     console.log(`Error crawling ${data}: ${err.message}`);
@@ -48,8 +34,6 @@ export const scrapeProperties = async () => {
     const propertyLinks = await page.$$eval(`a[itemprop="url"]`, (links) => links.map((link) => link.href));
     console.log(propertyLinks);
     console.log(propertyLinks.length);
-
-    const properties = [];
 
     // Process each property link
     for (const link of propertyLinks) {
@@ -85,25 +69,20 @@ export const scrapeProperties = async () => {
         const isDuplex = /duplex|maisonette|detached/i.test(link);
         const isFlat = /flat|apartment|condo/i.test(link);
 
-        console.log(`URL: ${link}`);
-        console.log(`isDuplex: ${isDuplex}, isFlat: ${isFlat}`);
-
         const propertyType = isDuplex ? "Duplex" : isFlat ? "Flat" : "Flat";
         const price = priceRaw ? parseInt(priceRaw.replace(/,/g, ""), 10) : 0;
 
         const propertyData = { name, email: "xxxxxx@gmail.com", phoneNumber, state, LGA: area, city: area, area, description, numberOfRooms: numberOfRooms ? +numberOfRooms : 0, propertyType, forSaleOrRent, price, propertyOwnerId: "676aff2b2f08e4ed24164195", imageUrls };
 
-        properties.push(propertyData);
+        const property = new Property(propertyData);
+        const savedProperty = await property.save();
 
-        // const property = new Property(propertyData);
-        // const savedProperty = await property.save();
+        properties.push(savedProperty);
       } catch (error) {
         console.log("Error processing property:", error);
       }
     }
 
-    console.log(properties);
-    console.log(`Total properties extracted: ${properties.length}`);
   });
 
   // Queue URLs for scraping
@@ -111,8 +90,10 @@ export const scrapeProperties = async () => {
     await cluster.queue(url);
   }
 
-  // await cluster.idle();
+  await cluster.idle();
   // await cluster.close();
-};
 
-scrapeProperties();
+  console.log(properties);
+  console.log(`Total properties extracted in services: ${properties.length}`);
+  return properties;
+};
