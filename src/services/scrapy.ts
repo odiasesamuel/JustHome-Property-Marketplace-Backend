@@ -18,7 +18,7 @@ const sleep = (waitTimeInMs: number) => new Promise((resolve) => setTimeout(reso
 
 const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-island?selectedLoc=1&q=for-sale+houses+lagos+victoria-island", "https://nigeriapropertycentre.com/for-sale/houses/lagos/lekki?selectedLoc=1&q=for-sale+houses+lagos+lekki"];
 
-(async () => {
+export const scrapeProperties = async () => {
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_PAGE,
     maxConcurrency: 30,
@@ -28,6 +28,8 @@ const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-
       headless: false,
     },
   });
+
+  const properties = [];
 
   cluster.on("taskerror", (err, data) => {
     console.log(`Error crawling ${data}: ${err.message}`);
@@ -80,8 +82,11 @@ const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
           .join(" ");
         const forSaleOrRent = url.includes("for-sale") ? "Sale" : url.includes("for-rent") ? "Rent" : "Rent";
-        const isDuplex = /duplex/i.test(url);
-        const isFlat = /flat|apartment/i.test(url);
+        const isDuplex = /duplex|maisonette|detached/i.test(link);
+        const isFlat = /flat|apartment|condo/i.test(link);
+
+        console.log(`URL: ${link}`);
+        console.log(`isDuplex: ${isDuplex}, isFlat: ${isFlat}`);
 
         const propertyType = isDuplex ? "Duplex" : isFlat ? "Flat" : "Flat";
         const price = priceRaw ? parseInt(priceRaw.replace(/,/g, ""), 10) : 0;
@@ -90,8 +95,8 @@ const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-
 
         properties.push(propertyData);
 
-        const property = new Property(propertyData);
-        const savedProperty = await property.save();
+        // const property = new Property(propertyData);
+        // const savedProperty = await property.save();
       } catch (error) {
         console.log("Error processing property:", error);
       }
@@ -108,4 +113,6 @@ const urls = ["https://nigeriapropertycentre.com/for-sale/houses/lagos/victoria-
 
   // await cluster.idle();
   // await cluster.close();
-})();
+};
+
+scrapeProperties();
