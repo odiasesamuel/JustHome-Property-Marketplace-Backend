@@ -1,7 +1,7 @@
 import app from "./app";
 import { connectToDatabase } from "./config/db.config";
 
-const PORT = 3000;
+const PORT = 5000;
 
 connectToDatabase(() => {
   app.listen(PORT, () => {
