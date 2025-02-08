@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(corsMiddleware);
 
 app.use("/auth", authRoutes);
-app.use("/property", isAuth, propertyRoutes);
+app.use("/property", propertyRoutes);
 app.use("/scrape", scraperRoutes);
 
 app.use(globalErrorHandler);

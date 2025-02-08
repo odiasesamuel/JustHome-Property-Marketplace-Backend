@@ -4,33 +4,6 @@ import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../sche
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 
-export const getPropertiesWithSearchTerm = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const currentPage = Math.max(1, +(req.query.page as string) || 1);
-    let perPage = +(req.query.perPage as string) || 10;
-
-    const filter: any = {};
-
-    // Search across multiple fields using the `search` keyword
-    if (req.query.search) {
-      const searchRegex = { $regex: req.query.search, $options: "i" };
-      filter.$or = [{ state: searchRegex }, { LGA: searchRegex }, { city: searchRegex }, { area: searchRegex }, { description: searchRegex }];
-    }
-
-    const totalProperties = await Property.find().countDocuments();
-
-    if (!req.query.page && !req.query.perPage) perPage = totalProperties;
-
-    const properties = await Property.find(filter)
-      .skip((currentPage - 1) * perPage)
-      .limit(perPage)
-      .lean();
-
-    res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -39,9 +12,11 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 
     const filter: any = {};
 
-    if (req.query.state) filter.state = req.query.state;
-    if (req.query.LGA) filter.LGA = req.query.LGA;
-    if (req.query.city) filter.city = req.query.city;
+    if (req.query.search) {
+      const searchRegex = { $regex: req.query.search, $options: "i" };
+      filter.$or = [{ state: searchRegex }, { LGA: searchRegex }, { city: searchRegex }, { area: searchRegex }, { description: searchRegex }];
+    }
+
     if (req.query.propertyType) filter.propertyType = req.query.propertyType;
     if (req.query.forSaleOrRent) filter.forSaleOrRent = req.query.forSaleOrRent;
 
