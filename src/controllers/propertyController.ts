@@ -4,7 +4,6 @@ import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../sche
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 
-
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const currentPage = Math.max(1, +(req.query.page as string) || 1);
@@ -28,7 +27,7 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
       if (req.query.maxPrice) filter.price.$lte = +req.query.maxPrice;
     }
 
-    const totalProperties = await Property.find().countDocuments();
+    const totalProperties = await Property.find(filter).countDocuments();
 
     if (!req.query.page && !req.query.perPage) perPage = totalProperties;
 
