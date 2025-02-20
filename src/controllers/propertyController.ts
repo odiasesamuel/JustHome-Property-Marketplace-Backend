@@ -108,7 +108,7 @@ export const editProperty = async (req: Request, res: Response, next: NextFuncti
 
     if (propertyData?.propertyOwnerId.toString() !== req.userId) {
       const errorMessage = "Not authorized to edit this property";
-      throw errorHandler(errorMessage, 401);
+      throw errorHandler(errorMessage, 403);
     }
 
     const editedData = await Property.findByIdAndUpdate(validatedPropertyId.data, validatedUpdatedData.data, { new: true });
@@ -131,7 +131,7 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     const propertyData = await Property.findById(validatedPropertyId.data);
     if (propertyData?.propertyOwnerId.toString() !== req.userId) {
       const errorMessage = "Not authorized to edit this property";
-      throw errorHandler(errorMessage, 401);
+      throw errorHandler(errorMessage, 403);
     }
 
     const deletedData = await Property.findByIdAndDelete(validatedPropertyId.data);
