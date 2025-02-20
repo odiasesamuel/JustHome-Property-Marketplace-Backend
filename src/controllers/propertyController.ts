@@ -34,6 +34,7 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
     const properties = await Property.find(filter)
       .skip((currentPage - 1) * perPage)
       .limit(perPage)
+      .select("message _id name area numberOfRooms forSaleOrRent price imageUrls")
       .lean();
 
     res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
@@ -51,7 +52,7 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
       throw errorHandler(errorMessage, 422);
     }
 
-    const property = await Property.findById(validatedPropertyId.data).populate("propertyOwnerId").lean();
+    const property = await Property.findById(validatedPropertyId.data).select("-propertyOwnerId").lean();
 
     if (!property) {
       const errorMessage = "Could not find property";
