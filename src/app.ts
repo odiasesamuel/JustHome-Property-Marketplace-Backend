@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
+import contactMessageRoutes from "./routes/contactMessageRoutes";
 import { globalErrorHandler, Error404Handler } from "./middlewares/errorHandler";
 import { corsMiddleware } from "./middlewares/corsMiddleware";
 import { isAuth } from "./middlewares/isAuth";
@@ -16,6 +17,7 @@ app.use(corsMiddleware);
 
 app.use("/auth", authRoutes);
 app.use("/property", propertyRoutes);
+app.use("/message", contactMessageRoutes);
 app.use("/scrape", scraperRoutes);
 
 app.use(globalErrorHandler);
