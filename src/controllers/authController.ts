@@ -29,7 +29,14 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const registeredUser = await user.save();
     const { firstName, lastName, email, accountType, id } = registeredUser;
 
-    res.status(201).json({ message: `${accountType} account has been created`, data: { userId: id, firstName, lastName, email, accountType } });
+    const tokenValue = jwt.sign({ email: registeredUser.email, userId: registeredUser.id }, process.env.JWT_SECRET!, { expiresIn: "12h" });
+    const expirationTime = new Date(Date.now() + 60 * 60 * 1000);
+    const token = {
+      value: tokenValue,
+      expiresAt: expirationTime.toISOString(),
+    };
+
+    res.status(201).json({ message: `${accountType} account has been created`, data: { userId: id, firstName, lastName, email, accountType }, token });
   } catch (error) {
     next(error);
   }
@@ -55,7 +62,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
-    const tokenValue = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+    const tokenValue = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "12h" });
     const expirationTime = new Date(Date.now() + 60 * 60 * 1000);
     const token = {
       value: tokenValue,
