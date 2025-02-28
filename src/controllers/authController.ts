@@ -18,9 +18,13 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       throw errorHandler(errorMessage, 422, req.body);
     }
 
+    const existingUser = await User.findOne({ email: validatedData.data.email.toLowerCase() });
+    if (existingUser) throw errorHandler("A user with this email already exist", 409);
+
     const password = validatedData.data.password;
     const hashedPassword = await bcrypt.hash(password, 12);
-    const userData = { ...validatedData.data, password: hashedPassword };
+    const userData = { ...validatedData.data, email: validatedData.data.email.toLowerCase(), password: hashedPassword };
+
     const user = new User(userData);
     const registeredUser = await user.save();
     const { firstName, lastName, email, accountType, id } = registeredUser;
