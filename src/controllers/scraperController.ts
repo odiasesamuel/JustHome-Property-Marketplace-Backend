@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { scrapeProperties } from "../services/scrapy";
+import { scrapeProperties } from "../services/webScraper/scrapy";
 
 export const scrapePropertiesForSale = async (req: Request, res: Response, next: NextFunction) => {
   try {

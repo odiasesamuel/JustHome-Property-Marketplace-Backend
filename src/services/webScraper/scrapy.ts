@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer";
 import { Cluster } from "puppeteer-cluster";
-import Property from "../models/propertyModel";
+import Property from "../../models/propertyModel";
 
 const sleep = (waitTimeInMs: number) => new Promise((resolve) => setTimeout(resolve, waitTimeInMs));
 

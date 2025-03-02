@@ -5,9 +5,15 @@ import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../services/emails/email";
+import { signUpEmailTemplate } from "../services/emails/templates";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+type JwtPayloadWithEmail = jwt.JwtPayload & {
+  email: string;
+};
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -29,14 +35,44 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const registeredUser = await user.save();
     const { firstName, lastName, email, accountType, id } = registeredUser;
 
-    const tokenValue = jwt.sign({ email: registeredUser.email, userId: registeredUser.id }, process.env.JWT_SECRET!, { expiresIn: "12h" });
-    const expirationTime = new Date(Date.now() + 60 * 60 * 1000);
-    const token = {
-      value: tokenValue,
-      expiresAt: expirationTime.toISOString(),
+    const tokenValue = jwt.sign({ email: registeredUser.email, userId: registeredUser.id }, process.env.JWT_SECRET!, { expiresIn: "24h" });
+
+    registeredUser.verificationToken = tokenValue;
+    await registeredUser.save();
+
+    const verificationLink = `${process.env.BACKEND_URL}/auth/verify?token=${encodeURIComponent(tokenValue)}`;
+
+    const signUpEmailOptions = {
+      to: email,
+      subject: "Welcome to JustHome",
+      html: signUpEmailTemplate(firstName, verificationLink),
     };
 
-    res.status(201).json({ message: `${accountType} account has been created`, data: { userId: id, firstName, lastName, email, accountType }, token });
+    await sendEmail(signUpEmailOptions);
+
+    res.status(201).json({ message: `${accountType} account has been created`, data: { firstName, lastName, email, accountType } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.query.token as string;
+    if (!token) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Missing verification token`);
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithEmail;
+    const email = decodedToken.email;
+
+    const user = await User.findOne({ email, verificationToken: token });
+    if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
+
+    user.verified = true;
+
+    user.verificationToken = undefined;
+    await user.save();
+
+    res.redirect(`${process.env.FRONTEND_URL}/auth`);
   } catch (error) {
     next(error);
   }
@@ -62,8 +98,13 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
-    const tokenValue = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "12h" });
-    const expirationTime = new Date(Date.now() + 60 * 60 * 1000);
+    if (!user.verified) {
+      const errorMessage = "Your account isn't verified, check your mail to verify your account";
+      throw errorHandler(errorMessage, 403, validatedData.data);
+    }
+
+    const tokenValue = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "24h" });
+    const expirationTime = new Date(Date.now() + 60 * 60 * 1000 * 24);
     const token = {
       value: tokenValue,
       expiresAt: expirationTime.toISOString(),
