@@ -72,7 +72,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
     user.verificationToken = undefined;
     await user.save();
 
-    res.redirect(`${process.env.FRONTEND_URL}/auth`);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=success&message=Your email has been successfully verified. You can now log in to your account.`);
   } catch (error) {
     next(error);
   }
