@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/UserModel";
-import { createUserSchema, loginSchema } from "../schemas/userSchema";
+import { createUserSchema, loginSchema, resetPasswordSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/emails/email";
-import { signUpEmailTemplate } from "../services/emails/templates";
+import { signUpEmailTemplate, resetPasswordEmailTemplate } from "../services/emails/templates";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -73,6 +73,47 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
     await user.save();
 
     res.redirect(`${process.env.FRONTEND_URL}/auth`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validatedData = resetPasswordSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
+    }
+
+    const existingUser = await User.findOne({ email: validatedData.data.email.toLowerCase() });
+    if (!existingUser) throw errorHandler("A user with this email exist", 404);
+
+    const { firstName, email, id } = existingUser;
+    const tokenValue = jwt.sign({ email, userId: id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+
+    existingUser.verificationToken = tokenValue;
+    await existingUser.save();
+
+    const verificationLink = `${process.env.BACKEND_URL}/auth/verify?token=${encodeURIComponent(tokenValue)}`;
+
+    const signUpEmailOptions = {
+      to: email,
+      subject: "Reset Your Password - JustHome",
+      html: resetPasswordEmailTemplate(firstName, verificationLink),
+    };
+
+    await sendEmail(signUpEmailOptions);
+
+    res.status(200).json({ message: `An email has been sent to ${email}. Please check your inbox and click the link to reset your password.` });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
   } catch (error) {
     next(error);
   }
