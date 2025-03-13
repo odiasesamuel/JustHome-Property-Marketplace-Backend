@@ -13,6 +13,11 @@ export const loginSchema = z.object({
   password: z.string().trim().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-export const resetPasswordSchema = z.object({
+export const requestResetPasswordSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, { message: "An error occurred, request password again" }),
+  password: z.string().trim().min(6, { message: "Password must be at least 6 characters" }),
 });

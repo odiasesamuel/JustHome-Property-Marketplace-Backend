@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/UserModel";
-import { createUserSchema, loginSchema, resetPasswordSchema } from "../schemas/userSchema";
+import { createUserSchema, loginSchema, requestResetPasswordSchema, resetPasswordSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 import bcrypt from "bcryptjs";
@@ -67,7 +67,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
     const user = await User.findOne({ email, verificationToken: token });
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
 
-    user.verified = true;
+    user.isEmailVerified = true;
 
     user.verificationToken = undefined;
     await user.save();
@@ -80,7 +80,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
 
 export const requestResetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const validatedData = resetPasswordSchema.safeParse(req.body);
+    const validatedData = requestResetPasswordSchema.safeParse(req.body);
 
     if (!validatedData.success) {
       const errorMessage = formatValidationError(validatedData.error.issues);
@@ -88,7 +88,7 @@ export const requestResetPassword = async (req: Request, res: Response, next: Ne
     }
 
     const existingUser = await User.findOne({ email: validatedData.data.email.toLowerCase() });
-    if (!existingUser) throw errorHandler("A user with this email exist", 404);
+    if (!existingUser) throw errorHandler("A user with this email does not exist", 404);
 
     const { firstName, email, id } = existingUser;
     const tokenValue = jwt.sign({ email, userId: id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
@@ -96,7 +96,7 @@ export const requestResetPassword = async (req: Request, res: Response, next: Ne
     existingUser.verificationToken = tokenValue;
     await existingUser.save();
 
-    const verificationLink = `${process.env.BACKEND_URL}/auth/verify?token=${encodeURIComponent(tokenValue)}`;
+    const verificationLink = `${process.env.BACKEND_URL}/auth/verify-reset-password?token=${encodeURIComponent(tokenValue)}`;
 
     const signUpEmailOptions = {
       to: email,
@@ -112,8 +112,56 @@ export const requestResetPassword = async (req: Request, res: Response, next: Ne
   }
 };
 
+export const verifyRequestResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.query.token as string;
+    if (!token) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Missing verification token`);
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithEmail;
+    const email = decodedToken.email;
+
+    const user = await User.findOne({ email, verificationToken: token });
+    if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
+
+    user.isResetPasswordRequestVerified = true;
+
+    user.verificationToken = undefined;
+    await user.save();
+
+    // Redirect to password reset page.
+    res.redirect(`${process.env.FRONTEND_URL}/auth/reset-password?token=${encodeURIComponent(token)}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const validatedData = resetPasswordSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
+    }
+
+    const token = validatedData.data.token as string;
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithEmail;
+    const email = decodedToken.email;
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      const errorMessage = "A user with this email could not be found";
+      throw errorHandler(errorMessage, 401, validatedData.data);
+    }
+
+    const password = validatedData.data.password;
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    existingUser.password = hashedPassword;
+    existingUser.isResetPasswordRequestVerified = false;
+    await existingUser.save();
+
+    res.status(200).json({ message: "Your password has been successfully reset. You can now log in with your new password." });
   } catch (error) {
     next(error);
   }
@@ -139,7 +187,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
-    if (!user.verified) {
+    if (!user.isEmailVerified) {
       const errorMessage = "Your account isn't verified, check your mail to verify your account";
       throw errorHandler(errorMessage, 403, validatedData.data);
     }

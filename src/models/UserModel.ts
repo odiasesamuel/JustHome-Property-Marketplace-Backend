@@ -28,7 +28,12 @@ const userSchema = new Schema({
     required: true,
   },
 
-  verified: {
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+
+  isResetPasswordRequestVerified: {
     type: Boolean,
     default: false,
   },
