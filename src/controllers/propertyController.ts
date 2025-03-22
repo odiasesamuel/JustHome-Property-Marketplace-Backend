@@ -65,6 +65,30 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+export const getUserListedProperties = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.userId;
+    const currentPage = Math.max(1, +(req.query.page as string) || 1);
+    let perPage = +(req.query.perPage as string) || 10;
+
+    const filter = { propertyOwnerId: userId };
+
+    const totalProperties = await Property.find(filter).countDocuments();
+
+    if (!req.query.page && !req.query.perPage) perPage = totalProperties;
+
+    const properties = await Property.find(filter)
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage)
+      .select("message _id name area numberOfRooms forSaleOrRent price imageUrls")
+      .lean();
+
+    res.status(200).json({ message: "Fetched properties successfully", properties, totalProperties });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const addProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
     req.body.price = +req.body.price;
@@ -130,17 +154,17 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     }
 
     const propertyData = await Property.findById(validatedPropertyId.data);
-    if (propertyData?.propertyOwnerId.toString() !== req.userId) {
+    if (!propertyData) {
+      const errorMessage = "Could not find property";
+      throw errorHandler(errorMessage, 404);
+    }
+
+    if (propertyData.propertyOwnerId.toString() !== req.userId) {
       const errorMessage = "Not authorized to edit this property";
       throw errorHandler(errorMessage, 403);
     }
 
     const deletedData = await Property.findByIdAndDelete(validatedPropertyId.data);
-
-    if (!deletedData) {
-      const errorMessage = "Could not find property";
-      throw errorHandler(errorMessage, 404);
-    }
 
     res.status(200).json({ message: "Property have been successfully deleted", propertyData: deletedData });
   } catch (error) {
