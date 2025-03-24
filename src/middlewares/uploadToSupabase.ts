@@ -15,7 +15,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: fileFilter,
   limits: { fileSize: 10 * 1024 * 1024 },
-}).array("propertyImage", 7);
+}).array("propertyImage", 10);
 
 export const uploadFilesToSupabase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   upload(req, res, async (err: any) => {

@@ -33,6 +33,7 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
     if (!req.query.page && !req.query.perPage) perPage = totalProperties;
 
     const properties = await Property.find(filter)
+      .sort({ _id: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage)
       .select("message _id name area numberOfRooms forSaleOrRent price imageUrls")
@@ -79,6 +80,7 @@ export const getUserListedProperties = async (req: Request, res: Response, next:
     if (!req.query.page && !req.query.perPage) perPage = totalProperties;
 
     const properties = await Property.find(filter)
+      .sort({ _id: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage)
       .select("message _id name area numberOfRooms forSaleOrRent price imageUrls")
