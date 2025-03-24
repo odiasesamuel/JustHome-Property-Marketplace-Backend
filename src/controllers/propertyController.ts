@@ -3,6 +3,7 @@ import Property from "../models/propertyModel";
 import { addPropertySchema, propertyIdSchema, editPropertySchema } from "../schemas/propertySchema";
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
+import { supabase } from "../config/supabaseClient.config";
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -106,6 +107,12 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
 
     res.status(201).json({ message: "The Property has been uploaded", propertyData: savedProperty });
   } catch (error) {
+    if (req.body.imageUrls && req.body.imageUrls.length > 0) {
+      for (const imageUrl of req.body.imageUrls) {
+        const fileName = imageUrl.split("/").pop();
+        await supabase.storage.from("rental-marketplace-images").remove([fileName]);
+      }
+    }
     next(error);
   }
 };
