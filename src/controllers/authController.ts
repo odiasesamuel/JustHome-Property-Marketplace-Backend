@@ -199,7 +199,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       expiresAt: expirationTime.toISOString(),
     };
 
-    const loggedInUser = { firstName: user.firstName, lastName: user.lastName, email: user.email, accountType: user.accountType };
+    const loggedInUser = { userId: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, accountType: user.accountType };
 
     res.status(200).json({ message: "Login successful", loggedInUser, token });
   } catch (error) {

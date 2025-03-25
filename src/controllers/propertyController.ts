@@ -54,7 +54,7 @@ export const getProperty = async (req: Request, res: Response, next: NextFunctio
       throw errorHandler(errorMessage, 422);
     }
 
-    const property = await Property.findById(validatedPropertyId.data).select("-propertyOwnerId").lean();
+    const property = await Property.findById(validatedPropertyId.data).lean();
 
     if (!property) {
       const errorMessage = "Could not find property";
