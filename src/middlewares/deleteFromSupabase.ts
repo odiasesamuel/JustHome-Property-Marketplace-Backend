@@ -23,7 +23,7 @@ export const deleteFilesFromSupabase = async (req: Request, res: Response, next:
 
     if (property?.propertyOwnerId.toString() !== req.userId) {
       const errorMessage = "Not authorized to edit this property";
-      throw errorHandler(errorMessage, 401);
+      throw errorHandler(errorMessage, 403);
     }
 
     const filenames = property.imageUrls
