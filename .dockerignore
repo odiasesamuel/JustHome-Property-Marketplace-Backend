@@ -1,0 +1,39 @@
+# Ignore node modules
+node_modules
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment variables
+.env
+.env.*  # if you're using .env.development, .env.production, etc.
+
+# Docker-specific files (optional, but common)
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+
+# Build artifacts (if applicable)
+dist
+build
+
+# Temporary or cache files
+.npm
+.yarn
+.cache
+
+# Test directories
+test
+tests

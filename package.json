@@ -1,5 +1,5 @@
 {
-  "name": "property-rental-marketplace",
+  "name": "property-marketplace-backend",
   "version": "1.0.0",
   "description": "This is a marketplace application for property rentals",
   "main": "dist/server.js",
