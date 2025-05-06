@@ -169,7 +169,7 @@ export const deleteProperty = async (req: Request, res: Response, next: NextFunc
     }
 
     if (propertyData.propertyOwnerId.toString() !== req.userId) {
-      const errorMessage = "Not authorized to edit this property";
+      const errorMessage = "Not authorized to delete this property";
       throw errorHandler(errorMessage, 403);
     }
 

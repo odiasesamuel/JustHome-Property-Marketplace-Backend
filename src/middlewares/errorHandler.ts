@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 export type GlobalErrorHandlerType = Error & {
-  statusCode?: number;
+  statusCode: number;
   data?: any;
 };
 
