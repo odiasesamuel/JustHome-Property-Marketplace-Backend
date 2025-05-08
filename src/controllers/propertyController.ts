@@ -97,8 +97,8 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
     req.body.price = +req.body.price;
     req.body.numberOfRooms = +req.body.numberOfRooms;
     req.body.propertyOwnerId = req.userId;
-    const validatedData = addPropertySchema.safeParse(req.body);
 
+    const validatedData = addPropertySchema.safeParse(req.body);
     if (!validatedData.success) {
       const errorMessage = formatValidationError(validatedData.error.issues);
       throw errorHandler(errorMessage, 422, req.body);
@@ -121,6 +121,9 @@ export const addProperty = async (req: Request, res: Response, next: NextFunctio
 
 export const editProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    req.body.price = +req.body.price;
+    req.body.numberOfRooms = +req.body.numberOfRooms;
+
     const propertyId = req.params.propertyId;
     const validatedPropertyId = propertyIdSchema.safeParse(propertyId);
     if (!validatedPropertyId.success) {
@@ -197,7 +200,7 @@ export const editPropertyImageUrl = async (req: Request, res: Response, next: Ne
     property.imageUrls = imageUrls;
     await property.save();
 
-    res.status(200).json({ message: "Property Image has been successfully updated", updatedProperty: property });
+    next();
   } catch (error) {
     next(error);
   }

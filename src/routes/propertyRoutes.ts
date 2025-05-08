@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { getProperties, getUserListedProperties, getProperty, deleteProperty, editProperty, addProperty, editPropertyImageUrl } from "../controllers/propertyController";
-import { uploadFilesToSupabase } from "../middlewares/uploadToSupabase";
+import { uploadFilesToSupabase, upload } from "../middlewares/uploadToSupabase";
 import { deleteFilesFromSupabase } from "../middlewares/deleteFromSupabase";
 import { isAuth } from "../middlewares/isAuth";
+import { ifFileUploaded } from "../middlewares/ifFileUploaded";
 
 const router = Router();
 
@@ -14,10 +15,8 @@ router.get("/:propertyId", getProperty);
 
 router.post("/", isAuth, uploadFilesToSupabase, addProperty);
 
-router.patch("/:propertyId", isAuth, editProperty);
+router.patch("/:propertyId", isAuth, upload, ifFileUploaded(deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl), editProperty);
 
 router.delete("/:propertyId", isAuth, deleteFilesFromSupabase, deleteProperty);
-
-router.patch("/image/:propertyId", isAuth, deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl);
 
 export default router;
