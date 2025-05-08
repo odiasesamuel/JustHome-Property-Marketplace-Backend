@@ -7,9 +7,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/emails/email";
 import { signUpEmailTemplate, resetPasswordEmailTemplate } from "../services/emails/templates";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 type JwtPayloadWithEmail = jwt.JwtPayload & {
   email: string;
@@ -117,10 +114,13 @@ export const verifyRequestResetPassword = async (req: Request, res: Response, ne
     const token = req.query.token as string;
     if (!token) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Missing verification token`);
 
+    console.log(`token: ${token}`);
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithEmail;
     const email = decodedToken.email;
+    console.log(`email: ${email}`);
 
     const user = await User.findOne({ email, verificationToken: token });
+    console.log(`user: ${user}`);
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
 
     user.isResetPasswordRequestVerified = true;

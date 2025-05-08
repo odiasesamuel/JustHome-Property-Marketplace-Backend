@@ -1,9 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { errorHandler } from "../utils/errorUtils";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 type JwtPayloadWithUserId = jwt.JwtPayload & {
   userId: string;
