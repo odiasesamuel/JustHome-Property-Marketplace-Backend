@@ -124,8 +124,6 @@ export const verifyRequestResetPassword = async (req: Request, res: Response, ne
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
 
     user.isResetPasswordRequestVerified = true;
-
-    user.verificationToken = undefined;
     await user.save();
 
     // Redirect to password reset page.
@@ -159,6 +157,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
     existingUser.password = hashedPassword;
     existingUser.isResetPasswordRequestVerified = false;
+    existingUser.verificationToken = undefined;
     await existingUser.save();
 
     res.status(200).json({ message: "Your password has been successfully reset. You can now log in with your new password." });
@@ -183,7 +182,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     const isEqual = await bcrypt.compare(validatedData.data.password, user.password);
     if (!isEqual) {
-      const errorMessage = "Password is incorrect";
+      const errorMessage = "We couldn't verify your details. Please check your email and password.";
       throw errorHandler(errorMessage, 401, validatedData.data);
     }
 
