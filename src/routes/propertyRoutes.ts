@@ -13,7 +13,7 @@ router.get("/my-listing", isAuth, getUserListedProperties);
 
 router.get("/:propertyId", getProperty);
 
-router.post("/", isAuth, uploadFilesToSupabase, addProperty);
+router.post("/", isAuth, upload, uploadFilesToSupabase, addProperty);
 
 router.patch("/:propertyId", isAuth, upload, ifFileUploaded(deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl), editProperty);
 
