@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/UserModel";
-import { createUserSchema, loginSchema, requestResetPasswordSchema, resetPasswordSchema } from "../schemas/userSchema";
+import { createUserSchema, loginSchema, requestResetPasswordSchema, resendSignUpVerificationEmailSchema, resetPasswordSchema } from "../schemas/userSchema";
 import { formatValidationError } from "../utils/formatValidationError";
 import { errorHandler } from "../utils/errorUtils";
 import bcrypt from "bcryptjs";
@@ -75,6 +75,43 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+export const resendSignUpVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validatedData = resendSignUpVerificationEmailSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+      const errorMessage = formatValidationError(validatedData.error.issues);
+      throw errorHandler(errorMessage, 422, req.body);
+    }
+
+    const user = await User.findOne({ email: validatedData.data.email.toLowerCase() });
+    if (!user) {
+      const errorMessage = "A user with this email could not be found";
+      throw errorHandler(errorMessage, 401, validatedData.data);
+    }
+
+    const { id, firstName, email } = user;
+
+    const tokenValue = jwt.sign({ email, userId: id }, process.env.JWT_SECRET!, { expiresIn: "24h" });
+
+    user.verificationToken = tokenValue;
+    await user.save();
+
+    const verificationLink = `${process.env.BACKEND_URL}/auth/verify?token=${encodeURIComponent(tokenValue)}`;
+
+    const signUpEmailOptions = {
+      to: email,
+      subject: "Welcome to JustHome",
+      html: signUpEmailTemplate(firstName, verificationLink),
+    };
+
+    await sendEmail(signUpEmailOptions);
+    res.status(200).json({ message: "A new verification link has been sent to your email, please check your email to verify your account.", data: { email } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const requestResetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedData = requestResetPasswordSchema.safeParse(req.body);
@@ -114,13 +151,10 @@ export const verifyRequestResetPassword = async (req: Request, res: Response, ne
     const token = req.query.token as string;
     if (!token) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Missing verification token`);
 
-    console.log(`token: ${token}`);
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithEmail;
     const email = decodedToken.email;
-    console.log(`email: ${email}`);
 
     const user = await User.findOne({ email, verificationToken: token });
-    console.log(`user: ${user}`);
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/auth/verify?status=error&message=Invalid or expired verification link`);
 
     user.isResetPasswordRequestVerified = true;
@@ -174,7 +208,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw errorHandler(errorMessage, 422, req.body);
     }
 
-    const user = await User.findOne({ email: validatedData.data.email });
+    const user = await User.findOne({ email: validatedData.data.email.toLowerCase() });
     if (!user) {
       const errorMessage = "A user with this email could not be found";
       throw errorHandler(errorMessage, 401, validatedData.data);

@@ -1,11 +1,13 @@
 import { Router } from "express";
-import { signup, login, verifyEmail, requestResetPassword, verifyRequestResetPassword, resetPassword } from "../controllers/authController";
+import { signup, login, verifyEmail, resendSignUpVerificationEmail, requestResetPassword, verifyRequestResetPassword, resetPassword } from "../controllers/authController";
 
 const router = Router();
 
 router.post("/signup", signup);
 
 router.get("/verify", verifyEmail);
+
+router.post("/resend-verification", resendSignUpVerificationEmail);
 
 router.post("/login", login);
 
