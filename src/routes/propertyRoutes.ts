@@ -15,7 +15,7 @@ router.get("/:propertyId", getProperty);
 
 router.post("/", isAuth, upload, uploadFilesToSupabase, addProperty);
 
-router.patch("/:propertyId", isAuth, upload, ifFileUploaded(deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl), editProperty);
+router.put("/:propertyId", isAuth, upload, ifFileUploaded(deleteFilesFromSupabase, uploadFilesToSupabase, editPropertyImageUrl), editProperty);
 
 router.delete("/:propertyId", isAuth, deleteFilesFromSupabase, deleteProperty);
 
