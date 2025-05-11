@@ -14,7 +14,7 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 
     if (req.query.search) {
       const searchRegex = { $regex: req.query.search, $options: "i" };
-      filter.$or = [{ state: searchRegex }, { LGA: searchRegex }, { city: searchRegex }, { area: searchRegex }, { description: searchRegex }];
+      filter.$or = [{ name: searchRegex }, { state: searchRegex }, { LGA: searchRegex }, { city: searchRegex }, { area: searchRegex }, { description: searchRegex }];
     }
 
     if (req.query.propertyType) filter.propertyType = req.query.propertyType;
